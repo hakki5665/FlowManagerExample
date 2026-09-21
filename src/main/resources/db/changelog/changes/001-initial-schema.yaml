@@ -1,0 +1,82 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-create-file-tasks-table
+      author: hakki
+      changes:
+        - createTable:
+            tableName: file_tasks
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: original_path
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: converted_path
+                  type: varchar(512)
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+
+  - changeSet:
+      id: 2-create-outbox-messages-table
+      author: hakki
+      changes:
+        - createTable:
+            tableName: outbox_messages
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: topic
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payload
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 3-add-outbox-status-index
+      author: hakki
+      changes:
+        - createIndex:
+            indexName: idx_outbox_status_created
+            tableName: outbox_messages
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: created_at
