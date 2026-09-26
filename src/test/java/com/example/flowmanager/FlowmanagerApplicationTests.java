@@ -1,13 +1,19 @@
 package com.example.flowmanager;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.boot.test.context.SpringBootTest;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Application Context Tests")
+@SpringBootTest
 class FlowmanagerApplicationTests extends BaseIntegrationTest {
 
+	@Autowired
+	private ApplicationContext applicationContext;
+
 	@Test
-	@DisplayName("Load application context -> verify bean configuration")
 	void contextLoads() {
+		assertThat(applicationContext).isNotNull();
 	}
 }
