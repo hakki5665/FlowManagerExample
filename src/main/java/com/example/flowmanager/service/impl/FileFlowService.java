@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
+import org.springframework.util.StreamUtils;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -78,12 +78,8 @@ public class FileFlowService implements IFileFlowService {
         InputStream fileStream = storageService.download(task.getConvertedPath());
 
         return outputStream -> {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            try (fileStream) {
-                while ((bytesRead = fileStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
+            try (fileStream; outputStream) {
+                StreamUtils.copy(fileStream, outputStream);
                 outputStream.flush();
             }
         };
