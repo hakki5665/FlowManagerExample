@@ -1,5 +1,7 @@
 package com.example.flowmanager.service.impl;
 
+import com.example.flowmanager.client.SubscriptionCacheService;
+import com.example.flowmanager.client.SubscriptionDto;
 import com.example.flowmanager.dto.FileStatusResponse;
 import com.example.flowmanager.dto.UploadFileResponse;
 import com.example.flowmanager.model.FileTask;
@@ -32,12 +34,22 @@ public class FileFlowService implements IFileFlowService {
     private final FileTaskRepository taskRepository;
     private final ObjectMapper objectMapper;
     private final FileTaskRepositoryService taskRepositoryService;
+    private final SubscriptionCacheService subscriptionCacheService;
+
+    private static final long MAX_FREE_SIZE = 100 * 1024 * 1024L; // 100 MB
 
     @Override
     @SneakyThrows
-    public UploadFileResponse initFlow(MultipartFile file) {
+    public UploadFileResponse initFlow(MultipartFile file, String username) {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Файл не может быть пустым");
+        }
+
+        if (file.getSize() > MAX_FREE_SIZE) {
+            SubscriptionDto subscription = subscriptionCacheService.getSubscription(username);
+            if (subscription == null || !"PREMIUM".equals(subscription.getSubscriptionType())) {
+                throw new IllegalStateException("Ошибка: Размер файла превышает 100 МБ. Для загрузки больших файлов оформите PREMIUM подписку.");
+            }
         }
 
         UUID taskId = UUID.randomUUID();
@@ -75,10 +87,8 @@ public class FileFlowService implements IFileFlowService {
             throw new IllegalStateException("Путь к сконвертированному файлу отсутствует в БД");
         }
 
-        InputStream fileStream = storageService.download(task.getConvertedPath());
-
         return outputStream -> {
-            try (fileStream; outputStream) {
+            try (InputStream fileStream = storageService.download(task.getConvertedPath()); outputStream) {
                 StreamUtils.copy(fileStream, outputStream);
                 outputStream.flush();
             }

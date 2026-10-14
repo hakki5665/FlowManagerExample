@@ -21,8 +21,10 @@ public class FileFlowController {
     private final IFileFlowService fileFlowService;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UploadFileResponse> uploadFile(@RequestParam("file") MultipartFile file) {
-        UploadFileResponse response = fileFlowService.initFlow(file);
+    public ResponseEntity<UploadFileResponse> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Login", required = false, defaultValue = "anonymous") String username) {
+        UploadFileResponse response = fileFlowService.initFlow(file, username);
         return ResponseEntity.ok(response);
     }
 

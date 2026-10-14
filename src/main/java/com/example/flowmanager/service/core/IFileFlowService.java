@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface IFileFlowService {
 
-    UploadFileResponse initFlow(MultipartFile file);
+    UploadFileResponse initFlow(MultipartFile file, String username);
 
     FileStatusResponse getStatus(UUID taskId);
 
