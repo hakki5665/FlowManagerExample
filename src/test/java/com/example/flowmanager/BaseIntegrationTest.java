@@ -30,7 +30,6 @@ public abstract class BaseIntegrationTest {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
-
     protected static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
             DockerImageName.parse("postgres:15")
     );
@@ -47,10 +46,15 @@ public abstract class BaseIntegrationTest {
             .withCommand("server /data")
             .withExposedPorts(9000);
 
+    protected static final GenericContainer<?> redis = new GenericContainer<>(
+            DockerImageName.parse("redis:7-alpine")
+    ).withExposedPorts(6379);
+
     static {
         postgres.start();
         kafka.start();
         minio.start();
+        redis.start();
     }
 
     @DynamicPropertySource
@@ -67,5 +71,8 @@ public abstract class BaseIntegrationTest {
         registry.add("minio.secret-key", () -> "minioadmin");
         registry.add("minio.bucket-name", () -> "conversions");
         registry.add("minio.bucket", () -> "conversions");
+
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
     }
 }

@@ -1,35 +1,65 @@
 spring:
   application:
     name: flow-manager
+  profiles:
+    active: local
   threads:
     virtual:
       enabled: true
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/flow_manager
-    username: postgres
-    password: postgres
-
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
 
+minio:
+  bucket: conversions
+  bucket-name: conversions
+
+server:
+  tomcat:
+    connection-timeout: 5000
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/conversions
+    username: postgres
+    password: postgres
   kafka:
     bootstrap-servers: localhost:9092
-    consumer:
-      group-id: flow-manager-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 minio:
   endpoint: http://localhost:9000
   url: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin
-  bucket: conversions
-  bucket-name: conversions
-server:
-  tomcat:
-    connection-timeout: 5000
+
+eureka:
+  client:
+    enabled: false
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/flow_manager
+    username: postgres
+    password: postgres
+  kafka:
+    bootstrap-servers: kafka:29092
+
+minio:
+  endpoint: http://minio:9000
+  url: http://minio:9000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: false
